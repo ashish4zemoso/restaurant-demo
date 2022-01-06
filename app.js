@@ -6,32 +6,6 @@ const displayListItems = (ulElement,sectionElement) => {
     sectionElement.append(ulElement);
 };
 
-const dragStartHandler = (evtObj) => {
-    console.log("dragging begins");
-    evtObj.target.style.opacity = 0.5;
-};
-const dragEndHandler = (evtObj) => {
-    console.log("dragging ends");
-    evtObj.target.style.opacity = "";
-};
-const dragOverHandler = (evtObj) => {
-    evtObj.preventDefault();
-    console.log("dragging over");
-}
-const dragEnterHandler = (evtObj) => {
-    if(evtObj.target.className == "dropzone"){
-        console.log('drag enter')
-        evtObj.target.style.background="yellow";
-    }
-}
-const dragLeaveHandler = (evtObj) => {
-    if(evtObj.target.className=="dropzone"){
-        console.log('drag leave')
-        evtObj.target.style.background="";
-    }
-}
-
-
 class Dish{
     constructor(dishName,dishPrice,dishType){
         this.dishName = dishName;
@@ -56,6 +30,25 @@ const foodItems = [
     new Dish("Sparkling Water","65.0","beverages")
 ];
 
+var draggedElement;
+
+const dragHandler = (evtObj) => {
+    console.log("drag invoke");
+}
+
+const dragStartHandler = (evtObj) => {
+    draggedElement = evtObj.target;
+    console.log("dragging begins");
+    //console.log(evtObj);
+    evtObj.target.style.opacity = 0.5;
+};
+const dragEndHandler = (evtObj) => {
+    console.log("dragging ends");
+    //console.log(evtObj);
+    evtObj.target.style.opacity = "";
+};
+
+
 const makeListOfFoodItems = foodItems => { /*convert each foodItems to <li> element*/
     const foodLiElements = foodItems.map( (dish) => {
         
@@ -63,7 +56,7 @@ const makeListOfFoodItems = foodItems => { /*convert each foodItems to <li> elem
         foodTitleElement.innerText = dish.dishName 
         
         let foodPriceElement = document.createElement('span');
-        foodPriceElement.innerText = `Price: ${dish.dishPrice}`;
+        foodPriceElement.innerHTML = `Price: <span id="foodPrice">${dish.dishPrice}</span>`;
 
         let foodTypeElement = document.createElement('span');
         foodTypeElement.innerText = dish.dishType;
@@ -85,11 +78,14 @@ const makeListOfFoodItems = foodItems => { /*convert each foodItems to <li> elem
     foodLiElements.forEach(liItem => {
         liItem.classList.add('list-item');
         liItem.setAttribute('draggable','true');
-        liItem.addEventListener('dragstart',dragStartHandler);
-        liItem.addEventListener('dragend',dragEndHandler);
-        liItem.addEventListener('dragover',dragOverHandler);
-        liItem.addEventListener('dragenter',dragEnterHandler);
-        liItem.addEventListener('dragleave',dragLeaveHandler);
+        liItem.addEventListener('drag',dragHandler,false);
+        liItem.addEventListener('dragstart',dragStartHandler,false);
+        liItem.addEventListener('dragend',dragEndHandler,false);
+        
+        /* liItem.addEventListener('dragover',dragOverHandler,false);
+        liItem.addEventListener('dragenter',dragEnterHandler,false);
+        liItem.addEventListener('dragleave',dragLeaveHandler,false); */
+
         //liItem.addEventListener('')
         //console.log(li.getAttribute('draggable'));
        
@@ -113,8 +109,8 @@ class Table{
     constructor(tableName,){
         this.tableName = tableName;
         this.tableTotalBill = 0;
-        this.tableCartList =[];
         this.tableTotalItems =  0;
+        this.tableCartList = [];
     }
 }
 
@@ -124,6 +120,93 @@ const allTables = [
     new Table("Table 3"),
 ];
 
+const dragOverHandler = (evtObj) => {
+    evtObj.preventDefault();
+    console.log("dragging over");
+    //console.log(evtObj);
+    //console.log("dragging over");
+    // if(evtObj.target.className.indexOf("dropzone")!==-1){// to account for multiple classes
+        
+    // }
+}
+const dragEnterHandler = (evtObj) => {
+    //console.log(evtObj);
+    console.log('drag enter')
+    evtObj.target.style.background="yellow";
+    // if(evtObj.target.className.indexOf("dropzone")!==-1){// to account for multiple classes
+        
+    // }
+}
+const dragLeaveHandler = (evtObj) => {
+    //console.log(evtObj);
+    console.log('drag leave');
+    evtObj.target.style.background="";
+    // if(evtObj.target.className.indexOf("dropzone")!==-1){// to account for multiple classes
+        
+    // }
+}
+const dropHandler = (evtObj) => {
+    evtObj.preventDefault();
+    evtObj.target.style.background="";
+    console.log("DROPPED!!!!!!!!!!!!!!!!!");
+    
+    console.log(draggedElement);
+    let foodTitle = draggedElement.querySelector('h3').innerText;
+    let foodPrice = draggedElement.querySelector('#foodPrice').innerText;
+    console.log(foodTitle)
+    console.log(foodPrice)
+
+    let dropZoneElement = evtObj.target;
+    console.log(dropZoneElement);
+    let tableNameElement = dropZoneElement.querySelector('h3')
+    let tablePriceElement = dropZoneElement.querySelector('#tablePrice');
+    let tableTotalItemsElement = dropZoneElement.querySelector('#tableTotalItems');
+    console.log(tableNameElement);
+    console.log(tablePriceElement);
+    console.log(tableTotalItemsElement);
+
+    /* updating table values in the DOM*/
+    tablePriceElement.innerText = ( parseFloat(tablePriceElement.innerText) + 
+                                    parseFloat(foodPrice) ).toFixed(2);
+    tableTotalItemsElement.innerText = (Number(tableTotalItemsElement.innerText)+1).toString();
+    
+    /* updating table values in local DB*/
+    let workingIndex = tableNameElement.innerText.match(/\d+/)[0] - 1; //extract tablenumber and subtract 1 to get its index
+    let targetTable = allTables[workingIndex];
+    console.log('working index is:'+workingIndex);
+    console.log(targetTable);
+
+    targetTable.tableTotalBill = tablePriceElement.innerText;
+    targetTable.tableTotalItems = tableTotalItemsElement.innerText;
+    let newCartItem = {
+            foodTitle :`${foodTitle}`,
+            foodPrice : `${foodPrice}`,
+            foodServings: '1'
+    };
+    let cartList = targetTable.tableCartList;
+    let cartItemIndex = cartList.findIndex
+                        (currCartItem => currCartItem.foodTitle === foodTitle );
+    console.log('cartItemIndex: '+cartItemIndex);
+    if(cartItemIndex>-1){
+        cartList[cartItemIndex].foodServings = 
+                            (Number(cartList[cartItemIndex].foodServings)+1).toString();
+        console.log(`current Servings of ${cartList[cartItemIndex].foodTitle} are 
+                        ${cartList[cartItemIndex].foodServings}`);
+    } else{
+        cartList.push(newCartItem);
+    }
+
+    console.log('name: '+targetTable.tableName)
+    console.log('table total bill '+targetTable.tableTotalBill)
+    console.log('cart list ==> ')
+    targetTable.tableCartList.forEach(currCartItem => {
+        console.log(`dishName: ${currCartItem.foodTitle}\n
+                     dishPrice: ${currCartItem.foodPrice}\n
+                     servings: ${currCartItem.foodServings}`);
+    })
+    console.log('total items '+targetTable.tableTotalItems)
+    
+}
 
 const makeListOfTables = allTables => {
     const tableLiElements = allTables.map( (table) => {
@@ -131,19 +214,27 @@ const makeListOfTables = allTables => {
         tableTitleElement.innerText = table.tableName; 
 
         let tablePriceElement = document.createElement('span');
-        tablePriceElement.innerText = `Price: ${table.tableTotalBill} | `;
+        tablePriceElement.innerHTML = `Rs. 
+                                       <span id="tablePrice">${table.tableTotalBill}</span> 
+                                       | `;
 
         let tableTotalItemsElement  = document.createElement('span')
-        tableTotalItemsElement.innerText = `Total Items: ${table.tableTotalItems}`;
+        tableTotalItemsElement.innerHTML = `Total Items: 
+                                <span id="tableTotalItems">${table.tableTotalItems}</span>`;
 
         let liContainer = document.createElement('li');
         liContainer.append(tableTitleElement,tablePriceElement,tableTotalItemsElement);
         return liContainer;
     });
 
-    tableLiElements.forEach(li => {
-        li.classList.add('list-item');
-        li.classList.add('dropzone');
+    tableLiElements.forEach(liItem => {
+        liItem.classList.add('list-item');
+        liItem.classList.add('dropzone');
+
+        liItem.addEventListener('dragover',dragOverHandler,false);
+        liItem.addEventListener('dragenter',dragEnterHandler,false);
+        liItem.addEventListener('dragleave',dragLeaveHandler,false);
+        liItem.addEventListener('drop',dropHandler,false);
     });
     
     const tableItemsUlElement = document.createElement('ul');
