@@ -117,7 +117,7 @@ class Table{
 const allTables = [
     new Table("Table 1"),
     new Table("Table 2"),
-    new Table("Table 3"),
+    new Table("Table 3")
 ];
 
 const dragOverHandler = (evtObj) => {
@@ -208,6 +208,36 @@ const dropHandler = (evtObj) => {
     
 }
 
+const tableClickHandler = (evtObj) => {
+
+    let cartPopUpElement =  document.querySelector('.cart-popup');
+
+    let clickedElement = evtObj.target;
+    console.log(clickedElement);
+    let tableNameElement = clickedElement.querySelector('h3');
+    console.log(tableNameElement)
+    if(evtObj.target.style.background=='white'){
+        evtObj.target.style.background="yellow"
+    }else {
+        evtObj.target.style.background="white"
+    }
+    
+    let workingIndex = tableNameElement.innerText.match(/\d+/)[0] - 1; //extract tablenumber and subtract 1 to get its index
+    let targetTable = allTables[workingIndex];
+    console.log('working index is:'+workingIndex);
+    console.log(targetTable);
+
+    document.querySelector('#cart-header-table-number').innerText = (workingIndex+1).toString();
+
+    if(targetTable.tableCartList.length!=0){
+        
+    }else{
+       cartPopUpElement.style.display="block";
+       cartPopUpElement.querySelector('.cart-container').style.height="25%"
+       console.log(cartPopUpElement);
+    }
+}
+
 const makeListOfTables = allTables => {
     const tableLiElements = allTables.map( (table) => {
         let tableTitleElement = document.createElement('h3');
@@ -235,6 +265,7 @@ const makeListOfTables = allTables => {
         liItem.addEventListener('dragenter',dragEnterHandler,false);
         liItem.addEventListener('dragleave',dragLeaveHandler,false);
         liItem.addEventListener('drop',dropHandler,false);
+        liItem.addEventListener('click',tableClickHandler,false)
     });
     
     const tableItemsUlElement = document.createElement('ul');
@@ -291,6 +322,14 @@ const displayMatchingTables = () => {
 }
 
 tableSearchElement.addEventListener('input',displayMatchingTables);
+
+cartCloseButtonHanlder = (evtObj) => {
+    let cartPopUpElement =  document.querySelector('.cart-popup');
+    cartPopUpElement.style.display="none";
+}
+
+let cartCloseButton = document.querySelector('#cart-header-close-btn');
+cartCloseButton.addEventListener('click',cartCloseButtonHanlder);
 
 
 

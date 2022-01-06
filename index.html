@@ -27,8 +27,21 @@
           placeholder="Search menu.. by course, by food!"
         />
       </section>
-      <section class="order-container">
-        <p class="empty-table-msg">No Items added yet!</p>
+      <section class="cart-popup">
+        <section class="cart-container">
+          <section class="cart-header">
+            <h3>
+              <span>Table - </span>
+              <span id="cart-header-table-number"></span>
+              <span> | Order - Details</span>
+            </h3>
+            <span id="cart-header-close-btn">&times;</span>
+          </section>
+          <section class="cart-body">
+            <p class="empty-table-msg">No Items added yet! Cart is Empty.</p>
+          </section>
+          <section class="cart-footer"></section>
+        </section>
       </section>
     </section>
     <script src="./app.js"></script>
