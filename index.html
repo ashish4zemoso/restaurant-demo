@@ -6,6 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Zemoso Restaurant</title>
     <link rel="stylesheet" href="./style.css" />
+    <link
+      rel="stylesheet"
+      href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"
+    />
   </head>
   <body>
     <section class="main-container">
@@ -38,9 +42,32 @@
             <span id="cart-header-close-btn">&times;</span>
           </section>
           <section class="cart-body">
-            <p class="empty-table-msg">No Items added yet! Cart is Empty.</p>
+            <p id="empty-cart-placeHolder">
+              No Items added yet! Cart is Empty.
+            </p>
+            <section class="cart-bill-container">
+              <section class="cart-bill-columns">
+                <div class="sno"><span>S.No</span></div>
+                <div class="cart-food-title"><span> Item </span></div>
+                <div class="cart-food-price"><span>Price</span></div>
+                <div class="cart-food-servings">
+                  <span>Number of Servings</span>
+                </div>
+                <div class="cart-item-delete"><span>Delete</span></div>
+              </section>
+            </section>
+            <section class="cart-bill-total">
+              <span></span>
+            </section>
           </section>
-          <section class="cart-footer"></section>
+          <section class="cart-footer">
+            <section class="close-session">
+              <span>CLOSE SESSION</span>
+            </section>
+            <section class="generate-bill">
+              <span>(GENERATE BILL)</span>
+            </section>
+          </section>
         </section>
       </section>
     </section>

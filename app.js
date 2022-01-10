@@ -168,16 +168,16 @@ const dropHandler = (evtObj) => {
     /* updating table values in the DOM*/
     tablePriceElement.innerText = ( parseFloat(tablePriceElement.innerText) + 
                                     parseFloat(foodPrice) ).toFixed(2);
-    tableTotalItemsElement.innerText = (Number(tableTotalItemsElement.innerText)+1).toString();
+    //tableTotalItemsElement.innerText = (Number(tableTotalItemsElement.innerText)+1).toString();
     
-    /* updating table values in local DB*/
+    /* updating table values in local DB by fetching it from DOM*/
     let workingIndex = tableNameElement.innerText.match(/\d+/)[0] - 1; //extract tablenumber and subtract 1 to get its index
     let targetTable = allTables[workingIndex];
     console.log('working index is:'+workingIndex);
     console.log(targetTable);
 
     targetTable.tableTotalBill = tablePriceElement.innerText;
-    targetTable.tableTotalItems = tableTotalItemsElement.innerText;
+    //targetTable.tableTotalItems = tableTotalItemsElement.innerText;
     let newCartItem = {
             foodTitle :`${foodTitle}`,
             foodPrice : `${foodPrice}`,
@@ -196,6 +196,9 @@ const dropHandler = (evtObj) => {
         cartList.push(newCartItem);
     }
 
+    targetTable.tableTotalItems = cartList.length;
+    tableTotalItemsElement.innerText = cartList.length;
+
     console.log('name: '+targetTable.tableName)
     console.log('table total bill '+targetTable.tableTotalBill)
     console.log('cart list ==> ')
@@ -208,34 +211,307 @@ const dropHandler = (evtObj) => {
     
 }
 
+var workingTableNumber ;
+
+const closeSessionHandler = (evtObj) => {
+    console.log('evtObj target is =====>>')
+    console.log(evtObj.target);
+
+    let targetTable = allTables[workingTableNumber-1];
+    console.log(targetTable.tableName);
+    console.log(targetTable.tableTotalBill);
+    console.log(targetTable.tableCartList);
+    console.log(targetTable.tableTotalItems);
+
+   let cartPopUpElement =  document.querySelector('.cart-popup');
+   cartPopUpElement.style.display="none";
+
+   let tableLiElement = document.querySelector
+                        (`.tables-container ul 
+                           li:nth-of-type(${workingTableNumber})`
+                        );
+    console.log(tableLiElement)
+    tableLiElement.style.background="";
+    tableLiElement.querySelector('#tablePrice').innerText="0.0";
+    tableLiElement.querySelector('#tableTotalItems').innerText="0";
+    /* tableLiElements.forEach(liItem => {
+        if(liItem.style.background==="yellow"){
+            liItem.style.background="";
+            console.log("changed!!!!!!!!!!")
+        }
+    }) */
+    //let tableLiElements = document.querySelectorAll('.tables-container ul li');
+
+    let allCartFoodItems = document.querySelectorAll('.cart-bill-item');
+    console.log('following will be removed ===>')
+    allCartFoodItems.forEach(foodItem => {
+        console.log(foodItem);
+        foodItem.remove();
+    });
+
+    targetTable.tableTotalBill='0.0';
+    targetTable.tableCartList=[];
+    targetTable.tableTotalItems='0'; 
+}
+
+const generateBillHandler = (evtObj) => {
+    let targetTable = allTables[workingTableNumber-1];
+    targetTable.tableTotalBill='0.0';
+    targetTable.tableCartList=[];
+    targetTable.tableTotalItems='0';
+
+    let allDeleteElements = document.querySelectorAll('.cart-item-delete');
+    let allServingsInputElements = document.querySelectorAll('.cart-food-servings');
+
+    allDeleteElements.forEach((deleteElement)=>{
+        deleteElement.style.display="none";
+    })
+
+    for(let i=1;i<allServingsInputElements.length;i++){
+        let currServingsInputElement = allServingsInputElements[i];
+        console.log(currServingsInputElement);
+        let finalServingsValue = currServingsInputElement.
+                                    querySelector('input').value;
+        currServingsInputElement.querySelector('input').remove();
+
+        let newServingsInnerElement = document.createElement('span');
+        newServingsInnerElement.innerText=`${finalServingsValue}`;
+        currServingsInputElement.append(newServingsInnerElement);
+        console.log(currServingsInputElement+"VALUE WAS: "+finalServingsValue);
+    }
+
+    let tableLiElement = document.
+        querySelector(`.tables-container 
+                        .list-container 
+                        .list-item:nth-of-type(${workingTableNumber})`);
+    
+    let tableTotalBillElement = tableLiElement.querySelector('#tablePrice');
+    let tableTotalItemsElement = tableLiElement.querySelector('#tableTotalItems')
+    
+    tableTotalBillElement.innerText = targetTable.tableTotalBill;
+    tableTotalItemsElement.innerText = targetTable.tableTotalItems;
+            
+}
+
+const showBillFooterElement = () => {
+    let targetTable = allTables[workingTableNumber-1];
+    let footerElement = document.querySelector('.cart-footer');
+    if(targetTable.tableCartList.length!=0){
+        footerElement.style.display="flex";
+        let closeSessionElement = footerElement.querySelector('.close-session');
+        let generateBillElement = footerElement.querySelector('.generate-bill');
+        closeSessionElement.addEventListener('click',closeSessionHandler);
+        generateBillElement.addEventListener('click',generateBillHandler);
+    } else{
+        footerElement.style.display="none";
+    } 
+}
+
+const updateTableTotalElement = () => {
+    let targetTable = allTables[workingTableNumber-1];
+    let totalBillAmountElement = document.querySelector('.cart-bill-total span');
+    if(targetTable.tableCartList.length!=0){
+        totalBillAmountElement.parentElement.style.display="flex";
+        let total = allTables[workingTableNumber-1].tableTotalBill;
+        totalBillAmountElement.innerText=`Total: ${total}`;
+        console.log('totalBillAmountElement '+ totalBillAmountElement);
+    } else{
+        totalBillAmountElement.parentElement.style.display="none"
+    } 
+}
+
+const deleteItemHandler = evtObj => {
+    //console.log(allTables);
+    console.log(evtObj.target);
+    console.log(evtObj.target.parentElement);
+    //evtObj.target.parentElement.remove();
+    console.log(workingTableNumber);
+
+    let tableWorkingIndex = workingTableNumber-1;
+    //console.log(allTables[tableWorkingIndex]);
+    let deletedCartItemElement = evtObj.target.parentElement;
+    let cartItemSno = deletedCartItemElement.querySelector('.sno').innerText;
+    let cartItemIndex = Number(cartItemSno) - 1;
+    console.log(cartItemIndex);
+
+    /*updating values in local DB*/
+    let deletedCartItem = allTables[tableWorkingIndex].tableCartList[cartItemIndex];
+    allTables[tableWorkingIndex].tableCartList.splice(cartItemIndex,1);
+
+    allTables[tableWorkingIndex].tableTotalItems--;
+    let amountToBeDeducted = deletedCartItem.foodPrice * deletedCartItem.foodServings;
+    allTables[tableWorkingIndex].tableTotalBill -= amountToBeDeducted;
+
+    console.log(allTables[tableWorkingIndex]);
+    
+    /*updating Cart Container DOM*/
+    let nextCartItemElement = deletedCartItemElement.nextElementSibling;
+    while(nextCartItemElement){
+        console.log('current nextCartItemElement: '+ nextCartItemElement)
+        nextCartItemElement.querySelector('.sno').innerText = 
+            (Number(nextCartItemElement
+                .querySelector('.sno').innerText)-1).toString();
+        nextCartItemElement = nextCartItemElement.nextElementSibling;
+    }
+    deletedCartItemElement.remove();
+
+    /*updating Table Tab DOM*/
+    let tableLiElement = document.
+        querySelector(`.tables-container 
+                        .list-container 
+                        .list-item:nth-of-type(${workingTableNumber})`);
+    
+    let tableTotalBillElement = tableLiElement.querySelector('#tablePrice');
+    let tableTotalItemsElement = tableLiElement.querySelector('#tableTotalItems')
+    
+    tableTotalBillElement.innerText = allTables[tableWorkingIndex].tableTotalBill;
+    tableTotalItemsElement.innerText = allTables[tableWorkingIndex].tableTotalItems;
+            
+    updateTableTotalElement();
+    showBillFooterElement();
+}
+
+const servingsChangeHandler = evtObj => {
+    let servingsInputElement = evtObj.target;
+    //console.log(servingsInputElement);
+    let updatedServings = servingsInputElement.value;
+    console.log('updatedServings '+ updatedServings);
+    let currentCartItemElement = servingsInputElement.parentElement.parentElement;
+    //console.log(currentCartItemElement);
+
+    let tableWorkingIndex = workingTableNumber-1;
+    let cartItemSno = currentCartItemElement.querySelector('.sno').innerText;
+    let cartItemIndex = Number(cartItemSno) - 1;
+
+    let currTable = allTables[tableWorkingIndex];
+    let currCartItem = currTable.tableCartList[cartItemIndex];
+
+    /*updating local DB to values fetched from DOM*/
+    currCartItem.foodServings = (parseFloat(updatedServings)).toFixed(2);
+    console.log('!!currCartItem.foodServings '+ currCartItem.foodServings);
+    
+    let newTotalBillAmount =  currTable.tableCartList.reduce(
+        function(accumulatedCartBill,currCartItem){
+           let currCartItemPrice = parseFloat(currCartItem.foodPrice);
+           let currCartItemServings = parseFloat(currCartItem.foodServings);
+
+           console.log('currCartItemPrice '+currCartItemPrice)
+           console.log('currCartItemServings '+currCartItemServings)
+           console.log('till now '+ ( accumulatedCartBill + 
+           (currCartItemServings*currCartItemPrice) )  );
+
+           return accumulatedCartBill + 
+                    (currCartItemServings*currCartItemPrice); 
+        },0);
+    console.log('newTotalBillAmount '+newTotalBillAmount);
+    currTable.tableTotalBill = newTotalBillAmount.toFixed(2);
+    
+    /*updating DOM via values fetched from DB*/
+    let tableLiElement = document.
+        querySelector(`.tables-container 
+                        .list-container 
+                        .list-item:nth-of-type(${workingTableNumber})`);
+    
+    let tableTotalBillElement = tableLiElement.querySelector('#tablePrice');
+    tableTotalBillElement.innerText = currTable.tableTotalBill;
+
+    updateTableTotalElement();
+}
+
+
 const tableClickHandler = (evtObj) => {
 
     let cartPopUpElement =  document.querySelector('.cart-popup');
-
+    cartPopUpElement.style.display="block";
     let clickedElement = evtObj.target;
     console.log(clickedElement);
     let tableNameElement = clickedElement.querySelector('h3');
     console.log(tableNameElement)
-    if(evtObj.target.style.background=='white'){
-        evtObj.target.style.background="yellow"
-    }else {
-        evtObj.target.style.background="white"
-    }
+    evtObj.target.style.background="yellow"
     
     let workingIndex = tableNameElement.innerText.match(/\d+/)[0] - 1; //extract tablenumber and subtract 1 to get its index
+    workingTableNumber = workingIndex+1;
     let targetTable = allTables[workingIndex];
     console.log('working index is:'+workingIndex);
     console.log(targetTable);
 
     document.querySelector('#cart-header-table-number').innerText = (workingIndex+1).toString();
+    let cartPlaceHolderElement = document.querySelector('#empty-cart-placeHolder');
+    let cartBillContainerElement = document.querySelector('.cart-bill-container');
+    let totalBillAmountElement = document.querySelector('.cart-bill-total span');
 
     if(targetTable.tableCartList.length!=0){
+        cartPopUpElement.querySelector('.cart-container').style.height="75%";
+        console.log(cartPlaceHolderElement);
+        cartPlaceHolderElement.style.display="none";
+        cartBillContainerElement.style.display="flex";
         
-    }else{
-       cartPopUpElement.style.display="block";
-       cartPopUpElement.querySelector('.cart-container').style.height="25%"
+        /*creating a cart element*/
+        for(let i=0;i<targetTable.tableCartList.length;i++){
+            let cartBillItem = document.createElement('section');
+            cartBillItem.classList.add('cart-bill-item');
+
+            let sNoElement = document.createElement('div');
+            sNoElement.append(document.createElement('span').innerText=`${i+1}`);
+            sNoElement.classList.add('sno');
+
+            let foodTitleElement = document.createElement('div');
+            let dishName = targetTable.tableCartList[i].foodTitle;
+            foodTitleElement.append(document.
+                        createElement('span').innerText=`${dishName}`);
+            foodTitleElement.classList.add('cart-food-title');
+
+            let foodPriceElement = document.createElement('div');
+            let dishPrice = targetTable.tableCartList[i].foodPrice;
+            foodPriceElement.append(document.
+                        createElement('span').innerText=`${dishPrice}`);
+            foodPriceElement.classList.add('cart-food-price');
+
+            let foodServingsElement = document.createElement('div');
+            let dishServings = targetTable.tableCartList[i].foodServings;
+            /* foodServingsElement.append(document.
+                        createElement('span').innerText=`${dishServings}`) */;
+            let inputNumberFieldElement = document.createElement('input');
+            inputNumberFieldElement.setAttribute('type','number');
+            inputNumberFieldElement.setAttribute('value',`${dishServings}`)
+            inputNumberFieldElement.setAttribute('min','1');
+
+            inputNumberFieldElement.classList.add('servings-field');
+            inputNumberFieldElement.addEventListener('input',
+                servingsChangeHandler)
+            foodServingsElement.classList.add('cart-food-servings')
+
+            foodServingsElement.append(inputNumberFieldElement);
+            
+
+         /* <input type="number" id="numberOfServings" value="${z[1]}"
+                min="1"/> */
+
+            let deleteIconElement = document.createElement('div');
+            deleteIconElement.append(document.
+                        createElement('span').innerText='DEL');
+            deleteIconElement.classList.add('cart-item-delete');
+            deleteIconElement.addEventListener('click',deleteItemHandler,false);
+            //deleteIconElement.classList.add('fas fa-trash');      
+
+            cartBillItem.append(sNoElement,foodTitleElement,
+                            foodPriceElement,foodServingsElement,
+                            deleteIconElement);
+            cartBillItem.classList.add('cart-bill-item');
+
+            cartBillContainerElement.append(cartBillItem);
+        }
+    }else{ 
+      
+       cartPopUpElement.querySelector('.cart-container').style.height="25%";
+       cartPlaceHolderElement.style.display="block";
+       cartBillContainerElement.style.display="none";
+       //document.querySelector('.cart-body ').style.border="none";
        console.log(cartPopUpElement);
     }
+    console.log(allTables)
+    updateTableTotalElement();
+    showBillFooterElement();
 }
 
 const makeListOfTables = allTables => {
@@ -323,9 +599,27 @@ const displayMatchingTables = () => {
 
 tableSearchElement.addEventListener('input',displayMatchingTables);
 
-cartCloseButtonHanlder = (evtObj) => {
+const cartCloseButtonHanlder = (evtObj) => {
     let cartPopUpElement =  document.querySelector('.cart-popup');
     cartPopUpElement.style.display="none";
+    let tableLiElements = document.querySelectorAll('.tables-container ul li');
+    console.log(tableLiElements)
+    tableLiElements.forEach(liItem => {
+        if(liItem.style.background==="yellow"){
+            liItem.style.background="";
+            console.log("changed!!!!!!!!!!")
+        }
+    })
+    console.log('evtObj target is =====>>')
+    console.log(evtObj.target);
+
+    let allCartFoodItems = document.querySelectorAll('.cart-bill-item');
+    console.log('following will be removed ===>')
+    allCartFoodItems.forEach(foodItem => {
+        console.log(foodItem);
+        foodItem.remove();
+    })
+
 }
 
 let cartCloseButton = document.querySelector('#cart-header-close-btn');
