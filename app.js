@@ -132,7 +132,7 @@ const dragOverHandler = (evtObj) => {
 const dragEnterHandler = (evtObj) => {
     //console.log(evtObj);
     console.log('drag enter')
-    evtObj.target.style.background="yellow";
+    evtObj.target.style.background="orange";
     // if(evtObj.target.className.indexOf("dropzone")!==-1){// to account for multiple classes
         
     // }
@@ -276,6 +276,7 @@ const generateBillHandler = (evtObj) => {
 
         let newServingsInnerElement = document.createElement('span');
         newServingsInnerElement.innerText=`${finalServingsValue}`;
+        currServingsInputElement.style.textAlign='center';
         currServingsInputElement.append(newServingsInnerElement);
         console.log(currServingsInputElement+"VALUE WAS: "+finalServingsValue);
     }
@@ -427,7 +428,7 @@ const tableClickHandler = (evtObj) => {
     console.log(clickedElement);
     let tableNameElement = clickedElement.querySelector('h3');
     console.log(tableNameElement)
-    evtObj.target.style.background="yellow"
+    evtObj.target.style.background="orange"
     
     let workingIndex = tableNameElement.innerText.match(/\d+/)[0] - 1; //extract tablenumber and subtract 1 to get its index
     workingTableNumber = workingIndex+1;
@@ -486,13 +487,18 @@ const tableClickHandler = (evtObj) => {
 
          /* <input type="number" id="numberOfServings" value="${z[1]}"
                 min="1"/> */
-
-            let deleteIconElement = document.createElement('div');
+                // <i class="fas fa-trash"></i>
+                
+            /* let deleteIconElement = document.createElement('div');
             deleteIconElement.append(document.
-                        createElement('span').innerText='DEL');
+                        createElement('span').innerText='DEL'); */
+
+            let deleteIconElement = document.createElement('i');
             deleteIconElement.classList.add('cart-item-delete');
+            deleteIconElement.classList.add('glyphicon');
+            deleteIconElement.classList.add('glyphicon-trash');
             deleteIconElement.addEventListener('click',deleteItemHandler,false);
-            //deleteIconElement.classList.add('fas fa-trash');      
+                
 
             cartBillItem.append(sNoElement,foodTitleElement,
                             foodPriceElement,foodServingsElement,
@@ -549,7 +555,6 @@ const makeListOfTables = allTables => {
 
     tableLiElements.forEach(liItem => tableItemsUlElement.appendChild(liItem))
     displayListItems(tableItemsUlElement,tablesSectionElement);
- 
 }
 
 makeListOfTables(allTables);
@@ -605,7 +610,7 @@ const cartCloseButtonHanlder = (evtObj) => {
     let tableLiElements = document.querySelectorAll('.tables-container ul li');
     console.log(tableLiElements)
     tableLiElements.forEach(liItem => {
-        if(liItem.style.background==="yellow"){
+        if(liItem.style.background==="orange"){
             liItem.style.background="";
             console.log("changed!!!!!!!!!!")
         }
