@@ -108,8 +108,8 @@ makeListOfFoodItems(foodItems);
 class Table{
     constructor(tableName,){
         this.tableName = tableName;
-        this.tableTotalBill = 0;
-        this.tableTotalItems =  0;
+        this.tableTotalBill = '0.0';
+        this.tableTotalItems =  '0';
         this.tableCartList = [];
     }
 }
@@ -339,9 +339,12 @@ const deleteItemHandler = evtObj => {
     let deletedCartItem = allTables[tableWorkingIndex].tableCartList[cartItemIndex];
     allTables[tableWorkingIndex].tableCartList.splice(cartItemIndex,1);
 
-    allTables[tableWorkingIndex].tableTotalItems--;
+    let tableTotal = Number(allTables[tableWorkingIndex].tableTotalItems);
+    allTables[tableWorkingIndex].tableTotalItems = (tableTotal-1).toString();
     let amountToBeDeducted = deletedCartItem.foodPrice * deletedCartItem.foodServings;
-    allTables[tableWorkingIndex].tableTotalBill -= amountToBeDeducted;
+    let newTableTotal = parseFloat(allTables[tableWorkingIndex].tableTotalBill); 
+    newTableTotal-=amountToBeDeducted;
+    allTables[tableWorkingIndex].tableTotalBill = newTableTotal.toFixed(2);
 
     console.log(allTables[tableWorkingIndex]);
     
